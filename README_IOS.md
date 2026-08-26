@@ -1,4 +1,4 @@
-# ETH Entry Radar — iOS Edition V0.3.5.2
+# ETH Entry Radar — iOS Edition V0.3.7.2
 
 ## Что внутри
 - `radar.py` — аналитический движок
