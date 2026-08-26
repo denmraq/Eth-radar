@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="ETH Radar"><meta name="format-detection" content="telephone=no"><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png"><title>ETH Entry Radar</title>
+<style>
+:root{--bg:#0b0d12;--card:#151924;--muted:#8d96aa;--text:#f4f7fb;--green:#35d07f;--red:#ff5b67;--blue:#62a8ff;--yellow:#ffd166;--line:#252b38}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:760px;margin:auto;padding:18px 14px 42px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}.title{font-size:24px;font-weight:900}.sub{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}.pill{padding:7px 10px;border-radius:999px;background:#202636;font-size:12px;font-weight:800}
+.price{font-size:34px;font-weight:900}.scores,.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.score{font-size:27px;font-weight:900}.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}
+.signal{font-size:27px;font-weight:900;text-align:center;padding:16px;border-radius:16px;margin-top:12px}.wait{background:#202636}.long{background:rgba(53,208,127,.12);color:var(--green)}.short{background:rgba(255,91,103,.12);color:var(--red)}.watch{background:rgba(255,209,102,.1);color:var(--yellow)}
+.kv{padding:12px;border:1px solid var(--line);border-radius:14px}.k{font-size:11px;color:var(--muted);margin-bottom:5px}.v{font-size:17px;font-weight:850}
+h3{margin:0 0 8px}ul{padding-left:20px;margin:8px 0 0}li{margin:7px 0;color:#dbe1ec}
+button{width:100%;border:0;border-radius:14px;padding:14px;background:var(--blue);font-weight:900;font-size:16px}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin-top:18px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><div><div class="title">📡 ETH Entry Radar</div><div class="sub">iOS V0.3.1 · Time Engine · closed-candle logic</div></div><span id="regime" class="pill">...</span></div>
+
+<div class="card"><div class="sub">ETH/USDT PERP</div><div id="price" class="price">—</div>
+<div class="scores"><div><div class="sub">LONG</div><div id="longScore" class="score green">—</div></div><div><div class="sub">SHORT</div><div id="shortScore" class="score red">—</div></div></div></div>
+
+<div id="signal" class="signal wait">Загрузка…</div>
+
+<div class="card"><h3>⏱ Time Engine</h3><div class="grid">
+<div class="kv"><div class="k">STAGE</div><div id="stage" class="v">—</div></div>
+<div class="kv"><div class="k">ENTRY WINDOW</div><div id="entryWindow" class="v">—</div></div>
+<div class="kv"><div class="k">P(TP FIRST)</div><div id="ptp" class="v">—</div></div>
+<div class="kv"><div class="k">P(SL FIRST)</div><div id="psl" class="v">—</div></div>
+<div class="kv"><div class="k">P(NEITHER 4H)</div><div id="pnone" class="v">—</div></div>
+<div class="kv"><div class="k">TP TIME (25/50/75%)</div><div id="tptime" class="v">—</div></div>
+<div class="kv"><div class="k">ANALOGS</div><div id="analogs" class="v">—</div></div>
+<div class="kv"><div class="k">TIME INVALIDATION</div><div id="expiry" class="v">—</div></div>
+</div></div>
+
+<div id="trade" class="card" style="display:none"><h3>Сделка</h3><div class="grid">
+<div class="kv"><div class="k">ENTRY</div><div id="entry" class="v">—</div></div>
+<div class="kv"><div class="k">STOP</div><div id="stop" class="v">—</div></div>
+<div class="kv"><div class="k">TP1 / TP2</div><div id="tp12" class="v">—</div></div>
+<div class="kv"><div class="k">TP3 / R:R</div><div id="tp3" class="v">—</div></div></div></div>
+
+<div class="card"><div class="grid">
+<div class="kv"><div class="k">FUNDING</div><div id="funding" class="v">—</div></div>
+<div class="kv"><div class="k">OI Δ ~30m</div><div id="oi" class="v">—</div></div>
+<div class="kv"><div class="k">TRADE FLOW</div><div id="cvd" class="v">—</div></div>
+<div class="kv"><div class="k">LAST CLOSED 15m</div><div id="closed" class="v">—</div></div></div></div>
+
+<div class="card"><b>🟢 Аргументы LONG</b><ul id="longReasons"></ul></div>
+<div class="card"><b>🔴 Аргументы SHORT</b><ul id="shortReasons"></ul></div>
+<div id="vetoCard" class="card" style="display:none"><b>⛔ Фильтры входа</b><ul id="vetoes"></ul></div>
+<div id="warnCard" class="card" style="display:none"><b>ℹ️ Ограничения данных</b><ul id="warnings"></ul></div>
+<button onclick="loadRadar()">Обновить сейчас</button>
+<div class="foot">Автообновление 60 сек. Вероятности Time Engine — статистика исторических аналогов, не гарантия результата.</div>
+</div>
+<script>
+function val(x,suffix=''){return (x===null||x===undefined)?'—':x+suffix}
+function fill(id,arr){const ul=document.getElementById(id);ul.innerHTML='';(arr||[]).forEach(x=>{const li=document.createElement('li');li.textContent=x;ul.appendChild(li)})}
+async function loadRadar(){try{
+const r=await fetch('/api/radar',{cache:'no-store'}).then(x=>x.json());
+price.textContent=Number(r.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+longScore.textContent=r.long_score+'/100';shortScore.textContent=r.short_score+'/100';regime.textContent=r.regime;stage.textContent=r.stage;
+entryWindow.textContent=val(r.entry_window);ptp.textContent=val(r.p_tp_first,'%');psl.textContent=val(r.p_sl_first,'%');pnone.textContent=val(r.p_neither_4h,'%');
+tptime.textContent=(r.tp_time_median_min==null?'—':`${r.tp_time_p25_min}/${r.tp_time_median_min}/${r.tp_time_p75_min} мин`);
+analogs.textContent=r.analog_count;expiry.textContent=r.expiry_minutes+' мин';
+funding.textContent=r.funding_rate_pct+'%';oi.textContent=(r.oi_change_pct>=0?'+':'')+r.oi_change_pct+'%';cvd.textContent=Math.round(r.cvd_quote).toLocaleString('en-US');
+closed.textContent=new Date(r.last_closed_15m_utc).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const s=document.getElementById('signal');let cls='wait',txt='⚪ WAIT';
+if(r.signal==='LONG'){cls='long';txt='🟢 LONG ACTIVE'} else if(r.signal==='SHORT'){cls='short';txt='🔴 SHORT ACTIVE'}
+else if(r.stage==='WATCH_LONG'){cls='watch';txt='🟡 WATCH LONG'} else if(r.stage==='WATCH_SHORT'){cls='watch';txt='🟡 WATCH SHORT'}
+s.className='signal '+cls;s.textContent=txt;
+trade.style.display=r.signal==='WAIT'?'none':'block';
+if(r.signal!=='WAIT'){entry.textContent=r.entry_low+'–'+r.entry_high;stop.textContent=r.stop;tp12.textContent=r.tp1+' / '+r.tp2;tp3.textContent=r.tp3+' / '+r.rr_tp2}
+fill('longReasons',r.reasons_long);fill('shortReasons',r.reasons_short);fill('vetoes',r.vetoes);fill('warnings',r.warnings);
+vetoCard.style.display=r.vetoes.length?'block':'none';warnCard.style.display=r.warnings.length?'block':'none';
+}catch(e){signal.textContent='Ошибка получения данных';}}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/service-worker.js').catch(()=>{})}
+loadRadar();setInterval(loadRadar,60000);
+</script></body></html>
