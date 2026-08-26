@@ -1,28 +1,20 @@
-ETH Entry Radar iOS V0.3.5.1 — FULL FIXED
+ETH ENTRY RADAR V0.3.5.2 — COMPLETE PACKAGE
 
-GitHub structure must be exactly:
+ЗАГРУЗКА В GITHUB
+1. Файлы radar.py, server.py, requirements.txt, render.yaml, Dockerfile, Procfile и остальные корневые файлы загружать в КОРЕНЬ репозитория.
+2. Папку static сохранить именно как папку.
+3. В static должны находиться:
+   index.html
+   service-worker.js
+   manifest.webmanifest
+   icon-192.png
+   icon-512.png
+   apple-touch-icon.png
 
-Eth-radar/
-  radar.py
-  server.py
-  requirements.txt
-  render.yaml
-  Dockerfile
-  Procfile
-  README_INSTALL.txt
-  static/
-    index.html
-    manifest.webmanifest
-    service-worker.js
-    icon-192.png
-    icon-512.png
-    apple-touch-icon.png
+RENDER
+Region: Frankfurt (EU Central)
+Build: pip install -r requirements.txt
+Start: uvicorn server:app --host 0.0.0.0 --port $PORT
 
-Render:
-- Runtime: Python 3
-- Region: Frankfurt (EU Central)
-- Build Command: pip install -r requirements.txt
-- Start Command: uvicorn server:app --host 0.0.0.0 --port $PORT
-
-Important: service-worker.js MUST remain inside static/.
-The server exposes it at /service-worker.js for iPhone PWA registration.
+IPHONE
+Safari -> открыть URL -> Поделиться -> На экран Домой -> Добавить.
