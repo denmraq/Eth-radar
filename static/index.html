@@ -1,0 +1,39 @@
+<!doctype html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<title>ETH Entry Radar</title>
+<style>
+:root{--bg:#0b0d12;--card:#151a25;--line:#2a3140;--text:#f4f6fb;--muted:#919aae;--green:#35d07f;--red:#ff5b67;--blue:#5ba8ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:760px;margin:auto;padding:22px 14px 46px}.title{font-size:27px;font-weight:950}.sub{font-size:13px;color:var(--muted);margin-top:3px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:17px;margin:14px 0}.priceLabel,.k{font-size:12px;color:var(--muted);text-transform:uppercase}.price{font-size:44px;font-weight:950;margin-top:6px}.signal{font-size:31px;font-weight:950;text-align:center;padding:22px 14px;border-radius:20px;margin:14px 0}.long{background:rgba(53,208,127,.13);color:var(--green)}.short{background:rgba(255,91,103,.13);color:var(--red)}h2{font-size:21px;margin:0 0 13px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kv{padding:14px;border:1px solid var(--line);border-radius:15px;min-height:86px}.v{font-size:21px;font-weight:900;margin-top:7px}.dirLONG{color:var(--green)}.dirSHORT{color:var(--red)}button{width:100%;border:0;border-radius:16px;padding:16px;background:var(--blue);font-size:18px;font-weight:950;margin-top:14px;color:#07111d}.status{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}.mini{font-size:12px;color:var(--muted);line-height:1.45;margin-top:10px}.spin{display:inline-block;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:560px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr 1fr}.price{font-size:42px}.signal{font-size:28px}.v{font-size:20px}}
+</style></head><body><main class="wrap">
+<div><div class="title">📡 ETH Entry Radar</div><div class="sub">CORE V0.5.2 · SCALP · прогноз от текущей цены</div></div>
+<div class="card"><div class="priceLabel">ETH/USDT PERP · цена сейчас</div><div id="price" class="price">—</div></div>
+<div id="signal" class="signal long">Загрузка…</div>
+<div class="card"><h2>🔮 Прогноз направления</h2><div class="grid3">
+<div class="kv"><div class="k">1 час</div><div id="f1" class="v">—</div></div>
+<div class="kv"><div class="k">6 часов</div><div id="f6" class="v">—</div></div>
+<div class="kv"><div class="k">12 часов</div><div id="f12" class="v">—</div></div>
+</div></div>
+<div class="card"><h2>🎯 Уровни от текущей цены</h2><div class="grid2">
+<div class="kv"><div class="k">Вход сейчас</div><div id="entry" class="v">—</div></div>
+<div class="kv"><div class="k">Стоп</div><div id="stop" class="v">—</div></div>
+<div class="kv"><div class="k">Ближайший тейк</div><div id="tp1" class="v">—</div></div>
+<div class="kv"><div class="k">Качество данных</div><div id="quality" class="v">—</div></div>
+</div><div class="mini">Тейк — только ближайшая цель для текущего 1-часового направления. Дальнейшую фиксацию смотри по PnL и следующему обновлению радара.</div></div>
+<div class="card"><h2>⚡ Что видит алгоритм сейчас</h2><div class="grid2">
+<div class="kv"><div class="k">Быстрый 1м</div><div id="fast" class="v">—</div></div>
+<div class="kv"><div class="k">Поток 5м</div><div id="flow5" class="v">—</div></div>
+<div class="kv"><div class="k">Поток 15м</div><div id="flow15" class="v">—</div></div>
+<div class="kv"><div class="k">CVD / поток объёма</div><div id="cvd" class="v">—</div></div>
+<div class="kv"><div class="k">Изменение OI ~30м</div><div id="oi" class="v">—</div></div>
+<div class="kv"><div class="k">Фандинг</div><div id="funding" class="v">—</div></div>
+</div><div class="mini">Главный сигнал рассчитывается от текущей цены. Прогноз показывает наиболее вероятное направление на 1 час, 6 часов и 12 часов.</div></div>
+<button id="refresh" onclick="loadRadar(true)">↻ Обновить сейчас</button><div id="status" class="status">—</div>
+</main><script>
+const $=id=>document.getElementById(id);const fmt=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});const pct=n=>(Number(n)>=0?'+':'')+Number(n).toFixed(2)+'%';
+function dir(el,d,p){el.textContent=`${d} · ${Number(p).toFixed(1)}%`;el.className='v '+(d==='LONG'?'dirLONG':'dirSHORT')}
+async function loadRadar(manual=false){const b=$('refresh');const t0=performance.now();if(manual){b.disabled=true;b.innerHTML='<span class="spin">↻</span> Считаю…'}try{const res=await fetch('/api/radar?t='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('ошибка сервера '+res.status);const r=await res.json();const p=fmt(r.price);$('price').textContent=p;dir($('f1'),r.forecast_direction_1h,r.forecast_probability_1h);dir($('f6'),r.forecast_direction_6h,r.forecast_probability_6h);dir($('f12'),r.forecast_direction_12h,r.forecast_probability_12h);const s=r.trade_signal==='SHORT'?'SHORT':'LONG';const sig=$('signal');sig.className='signal '+(s==='LONG'?'long':'short');sig.textContent=(s==='LONG'?'🟢 LONG':'🔴 SHORT')+` · СЕЙЧАС ${p} · ${Number(r.forecast_probability_1h).toFixed(1)}%`;$('entry').textContent=p;$('stop').textContent=fmt(r.stop);$('tp1').textContent=fmt(r.tp1);$('quality').textContent=(r.data_confidence||0)+'/100';$('fast').textContent=r.fast_bias==='SHORT'?'SHORT':r.fast_bias==='LONG'?'LONG':'НЕЙТРАЛЬНО';$('flow5').textContent=r.flow_5m_pct==null?'прогрев '+Number(r.flow_5m_coverage_min||0).toFixed(1)+' мин':pct(r.flow_5m_pct);$('flow15').textContent=r.flow_15m_pct==null?'прогрев '+Number(r.flow_15m_coverage_min||0).toFixed(1)+' мин':pct(r.flow_15m_pct);$('cvd').textContent=Math.round(Number(r.cvd_quote||0)).toLocaleString('en-US');$('oi').textContent=pct(r.oi_change_pct||0);$('funding').textContent=Number(r.funding_rate_pct||0).toFixed(5)+'%';$('status').textContent='Последнее обновление: '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · '+((performance.now()-t0)/1000).toFixed(1)+' сек';}catch(e){$('status').textContent='Ошибка обновления: '+e.message;}finally{b.disabled=false;b.textContent='↻ Обновить сейчас'}}
+loadRadar();setInterval(()=>loadRadar(false),30000);if('serviceWorker'in navigator)navigator.serviceWorker.register('/service-worker.js?v=core052').catch(()=>{});
+</script></body></html>
